@@ -1,10 +1,11 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Student API Interface</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
         * {
             margin: 0;
@@ -58,7 +59,13 @@
             transform: translateY(-2px);
         }
 
-        #result {
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        #result,
+        #gradeResult {
             background: #faf5ff;
             border: 1px solid #e9d5ff;
             border-radius: 10px;
@@ -69,7 +76,8 @@
             overflow-wrap: anywhere;
         }
 
-        #result:empty {
+        #result:empty,
+        #gradeResult:empty {
             display: none;
         }
 
@@ -79,7 +87,8 @@
             margin: 28px 0;
         }
 
-        .greeting-section {
+        .greeting-section,
+        .grade-section {
             margin-top: 10px;
         }
 
@@ -104,6 +113,12 @@
             font-weight: bold;
         }
 
+        .hint {
+            color: #777;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
         @media (max-width: 480px) {
             .container {
                 padding: 22px;
@@ -119,79 +134,221 @@
         }
     </style>
 </head>
+
 <body>
+
+<div class="container">
+
     <h1>Student API Interface</h1>
 
-    <button onclick="loadStudent()">Load Student Information</button>
+    <!-- Student Information API -->
+    <section>
+        <h2>Student Information</h2>
 
-    <div id="result"></div>
+        <button onclick="loadStudent()">
+            Load Student Information
+        </button>
+
+        <div id="result" aria-live="polite"></div>
+    </section>
 
     <hr>
 
-    <h2>Greeting API</h2>
+    <!-- Greeting API -->
+    <section class="greeting-section">
+        <h2>Greeting API</h2>
 
-    <input
-        type="text"
-        id="nameInput"
-        placeholder="Enter your first name"
-    >
+        <input
+            type="text"
+            id="nameInput"
+            placeholder="Enter your first name"
+        >
 
-    <button onclick="sayHello()">Say Hello</button>
+        <button onclick="sayHello()">Say Hello</button>
 
-    <p id="greeting"></p>
+        <p id="greeting" aria-live="polite"></p>
+    </section>
 
-    <script>
-        // Load Student Information
-        function loadStudent() {
-            fetch('/student')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch student data');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    document.getElementById('result').innerHTML =
-                        '<p><b>Student ID:</b> ' + data.student_id + '</p>' +
-                        '<p><b>Name:</b> ' + data.name + '</p>' +
-                        '<p><b>Program:</b> ' + data.program + '</p>' +
-                        '<p><b>Year:</b> ' + data.year + '</p>' +
-                        '<p><b>Section:</b> ' + data.section + '</p>';
-                })
-                .catch(error => {
-                    document.getElementById('result').innerHTML =
-                        '<p>Unable to retrieve student data. Please try again.</p>';
-                    console.error('Error:', error);
+    <hr>
+
+    <!-- Grade API -->
+    <section class="grade-section">
+        <h2>Grade Checker API</h2>
+
+        <p class="hint">
+            Enter a score to check your grade and remark.
+            Accepted scores: 0–100.
+        </p>
+
+        <input
+            type="number"
+            id="scoreInput"
+            placeholder="Enter your score (0–100)"
+            min="0"
+            max="100"
+            step="any"
+        >
+
+        <button id="gradeButton" onclick="checkGrade()">
+            Check Grade
+        </button>
+
+        <div id="gradeResult" aria-live="polite"></div>
+    </section>
+
+</div>
+
+<script>
+    // Load Student Information
+    function loadStudent() {
+        const result = document.getElementById('result');
+
+        result.textContent = 'Loading student information...';
+
+        fetch('/student')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch student data');
+                }
+                return response.json();
+            })
+            .then(data => {
+                result.replaceChildren();
+
+                const fields = [
+                    ['Student ID', data.student_id],
+                    ['Name', data.name],
+                    ['Program', data.program],
+                    ['Year', data.year],
+                    ['Section', data.section]
+                ];
+
+                fields.forEach(([label, value]) => {
+                    const p = document.createElement('p');
+                    const b = document.createElement('b');
+
+                    b.textContent = label + ': ';
+                    p.appendChild(b);
+                    p.appendChild(
+                        document.createTextNode(
+                            value ?? 'Not provided'
+                        )
+                    );
+
+                    result.appendChild(p);
                 });
+            })
+            .catch(error => {
+                result.textContent =
+                    'Unable to retrieve student data. Please try again.';
+                console.error('Error:', error);
+            });
+    }
+
+    // Greeting API
+    function sayHello() {
+        const name =
+            document.getElementById('nameInput').value.trim();
+
+        const greeting = document.getElementById('greeting');
+
+        if (name === '') {
+            greeting.textContent =
+                'Please enter your first name.';
+            return;
         }
 
-        // Greeting API
-        function sayHello() {
-            const name = document.getElementById('nameInput').value.trim();
+        greeting.textContent = 'Loading greeting...';
 
-            if (name === '') {
-                document.getElementById('greeting').innerText =
-                    'Please enter your first name.';
-                return;
+        fetch('/hello?name=' + encodeURIComponent(name))
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch greeting');
+                }
+                return response.json();
+            })
+            .then(data => {
+                greeting.textContent =
+                    data.message || 'Greeting received.';
+            })
+            .catch(error => {
+                greeting.textContent =
+                    'Unable to retrieve greeting.';
+                console.error('Error:', error);
+            });
+    }
+
+    // Grade API
+    async function checkGrade() {
+        const scoreInput = document.getElementById('scoreInput');
+        const gradeResult = document.getElementById('gradeResult');
+        const gradeButton = document.getElementById('gradeButton');
+
+        const scoreText = scoreInput.value.trim();
+        const score = Number(scoreText);
+
+        // Validate the input
+        if (
+            scoreText === '' ||
+            !Number.isFinite(score) ||
+            score < 0 ||
+            score > 100
+        ) {
+            gradeResult.textContent =
+                'Please enter a valid score between 0 and 100.';
+            return;
+        }
+
+        gradeButton.disabled = true;
+        gradeResult.textContent = 'Checking grade...';
+
+        try {
+            const response = await fetch(
+                '/grade?score=' + encodeURIComponent(score)
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error || 'Failed to check grade.'
+                );
             }
 
-            fetch('/hello?name=' + encodeURIComponent(name))
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch greeting');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    document.getElementById('greeting').innerText =
-                        data.message;
-                })
-                .catch(error => {
-                    document.getElementById('greeting').innerText =
-                        'Unable to retrieve greeting.';
-                    console.error('Error:', error);
-                });
+            // Display the API response
+            gradeResult.replaceChildren();
+
+            const scoreParagraph = document.createElement('p');
+            const scoreLabel = document.createElement('b');
+
+            scoreLabel.textContent = 'Score: ';
+            scoreParagraph.appendChild(scoreLabel);
+            scoreParagraph.appendChild(
+                document.createTextNode(data.score + '/100')
+            );
+
+            const remarkParagraph = document.createElement('p');
+            const remarkLabel = document.createElement('b');
+
+            remarkLabel.textContent = 'Remark: ';
+            remarkParagraph.appendChild(remarkLabel);
+            remarkParagraph.appendChild(
+                document.createTextNode(data.remark)
+            );
+
+            gradeResult.appendChild(scoreParagraph);
+            gradeResult.appendChild(remarkParagraph);
+
+        } catch (error) {
+            gradeResult.textContent =
+                'Unable to check grade. Make sure the Flask server is running.';
+            console.error('Grade API error:', error);
+
+        } finally {
+            gradeButton.disabled = false;
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
