@@ -1,9 +1,9 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__)
 @app.route('/')
 def home():
-    return "Welcome to my first API!"
+    return render_template('index.html')
 @app.route('/student')
 def get_student():
     return jsonify({
@@ -53,4 +53,4 @@ def get_grade():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
