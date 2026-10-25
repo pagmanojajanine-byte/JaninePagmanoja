@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,6 +49,13 @@
             color: #777;
             font-size: 14px;
             margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #581c87;
+            font-weight: bold;
         }
 
         button {
@@ -105,6 +111,19 @@
             margin: 28px 0;
         }
 
+        .student-row {
+            padding: 10px 0;
+            border-bottom: 1px solid #e9d5ff;
+        }
+
+        .delete-button {
+            background: #b91c1c;
+        }
+
+        .delete-button:hover {
+            background: #7f1d1d;
+        }
+
         @media (max-width: 500px) {
             .container {
                 padding: 20px;
@@ -126,7 +145,84 @@
 
     <h1>Student API Interface</h1>
 
-    <!-- Student Information -->
+    <!-- STEP 4: CRUD INTERFACE -->
+    <section id="crudSection">
+        <h2>Manage Students (CRUD)</h2>
+
+        <p class="hint">
+            Enter student information to add a record.
+            Select Edit to update an existing student.
+        </p>
+
+        <form id="studentForm">
+            <input type="hidden" id="recordId">
+
+            <label for="studentIdInput">Student ID</label>
+            <input
+                type="text"
+                id="studentIdInput"
+                placeholder="Enter Student ID"
+                required
+            >
+
+            <label for="studentNameInput">Name</label>
+            <input
+                type="text"
+                id="studentNameInput"
+                placeholder="Enter full name"
+                required
+            >
+
+            <label for="studentProgramInput">Program</label>
+            <input
+                type="text"
+                id="studentProgramInput"
+                placeholder="Example: BSIT"
+                required
+            >
+
+            <label for="studentYearInput">Year</label>
+            <select id="studentYearInput" required>
+                <option value="">Select year level</option>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+            </select>
+
+            <label for="studentSectionInput">Section</label>
+            <input
+                type="text"
+                id="studentSectionInput"
+                placeholder="Example: A"
+                required
+            >
+
+            <button type="submit" id="saveStudentButton">
+                Add Student
+            </button>
+
+            <button type="button" onclick="resetStudentForm()">
+                Clear Form
+            </button>
+        </form>
+
+        <div id="crudMessage" class="results" aria-live="polite"></div>
+
+        <hr>
+
+        <h2>Student Records</h2>
+
+        <button type="button" onclick="loadCrudStudents()">
+            Refresh Student List
+        </button>
+
+        <div id="crudStudentList" class="results" aria-live="polite"></div>
+    </section>
+
+    <hr>
+
+    <!-- STUDENT INFORMATION -->
     <section>
         <h2>Student Information</h2>
         <button onclick="loadStudent()">Load Student Information</button>
@@ -135,7 +231,7 @@
 
     <hr>
 
-    <!-- All Students -->
+    <!-- ALL STUDENTS -->
     <section>
         <h2>Students from Database</h2>
         <button onclick="loadAllStudents()">Load All Students</button>
@@ -144,7 +240,7 @@
 
     <hr>
 
-    <!-- 18. Search by Program -->
+    <!-- SEARCH BY PROGRAM -->
     <section>
         <h2>18. Search Students by Program</h2>
         <p class="hint">Select a program to display its students.</p>
@@ -162,7 +258,7 @@
 
     <hr>
 
-    <!-- 19. Search by Year Level -->
+    <!-- SEARCH BY YEAR -->
     <section>
         <h2>19. Search Students by Year Level</h2>
         <p class="hint">Select a year level to display its students.</p>
@@ -181,7 +277,7 @@
 
     <hr>
 
-    <!-- 20. Search by Section -->
+    <!-- SEARCH BY SECTION -->
     <section>
         <h2>20. Search Students by Section</h2>
         <p class="hint">Select a section to display its students.</p>
@@ -199,7 +295,7 @@
 
     <hr>
 
-    <!-- Greeting API -->
+    <!-- GREETING API -->
     <section>
         <h2>Greeting API</h2>
 
@@ -216,7 +312,7 @@
 
     <hr>
 
-    <!-- Course API -->
+    <!-- COURSE API -->
     <section>
         <h2>Course Information</h2>
         <button onclick="loadCourse()">Load Course Information</button>
@@ -225,7 +321,7 @@
 
     <hr>
 
-    <!-- Grade Checker -->
+    <!-- GRADE CHECKER -->
     <section>
         <h2>Grade Checker API</h2>
 
@@ -248,7 +344,10 @@
 </div>
 
 <script>
-    // Display students in the specified results area
+    // ==========================================
+    // DISPLAY STUDENTS
+    // ==========================================
+
     function displayStudents(elementId, students) {
         const output = document.getElementById(elementId);
         output.replaceChildren();
@@ -281,10 +380,13 @@
         });
     }
 
-    // Reusable API request
+    // ==========================================
+    // REUSABLE GET REQUEST
+    // ==========================================
+
     async function fetchStudents(url, elementId) {
         const output = document.getElementById(elementId);
-        output.textContent = 'Searching students...';
+        output.textContent = 'Loading students...';
 
         try {
             const response = await fetch(url);
@@ -296,12 +398,261 @@
 
             displayStudents(elementId, data);
         } catch (error) {
-            output.textContent = 'Unable to retrieve students. Check the Flask server.';
+            output.textContent = error.message;
             console.error(error);
         }
     }
 
-    // Load individual student information
+    // ==========================================
+    // CRUD: SHOW MESSAGE
+    // ==========================================
+
+    function showCrudMessage(message, isError = false) {
+        const output = document.getElementById('crudMessage');
+        output.textContent = message;
+        output.style.color = isError ? '#b91c1c' : '#166534';
+    }
+
+    // ==========================================
+    // CRUD: CLEAR FORM
+    // ==========================================
+
+    function resetStudentForm() {
+        document.getElementById('studentForm').reset();
+        document.getElementById('recordId').value = '';
+        document.getElementById('saveStudentButton').textContent =
+            'Add Student';
+    }
+
+    // ==========================================
+    // CRUD: GET FORM DATA
+    // ==========================================
+
+    function studentDataFromForm() {
+        return {
+            student_id: document.getElementById('studentIdInput').value.trim(),
+            name: document.getElementById('studentNameInput').value.trim(),
+            program: document.getElementById('studentProgramInput').value.trim(),
+            year: document.getElementById('studentYearInput').value,
+            section: document.getElementById('studentSectionInput').value.trim()
+        };
+    }
+
+    // ==========================================
+    // CRUD: ADD AND UPDATE STUDENT
+    // POST adds a student.
+    // PUT updates a student.
+    // ==========================================
+
+    document.getElementById('studentForm').addEventListener(
+        'submit',
+        async function(event) {
+            event.preventDefault();
+
+            const recordId = document.getElementById('recordId').value;
+            const studentData = studentDataFromForm();
+
+            const url = recordId
+                ? `/api/students/${recordId}`
+                : '/api/students';
+
+            const method = recordId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(studentData)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        result.error || 'Unable to save student.'
+                    );
+                }
+
+                showCrudMessage(
+                    result.message ||
+                    (recordId ? 'Student updated.' : 'Student added.')
+                );
+
+                resetStudentForm();
+
+                // Refresh the CRUD list and existing student list.
+                await loadCrudStudents();
+                loadAllStudents();
+
+            } catch (error) {
+                showCrudMessage(error.message, true);
+                console.error(error);
+            }
+        }
+    );
+
+    // ==========================================
+    // CRUD: LOAD ALL STUDENTS
+    // ==========================================
+
+    async function loadCrudStudents() {
+        const output = document.getElementById('crudStudentList');
+        output.textContent = 'Loading students...';
+
+        try {
+            const response = await fetch('/students');
+            const students = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    students.error || 'Unable to load students.'
+                );
+            }
+
+            if (!Array.isArray(students)) {
+                throw new Error(
+                    'The /students endpoint must return a JSON array.'
+                );
+            }
+
+            output.replaceChildren();
+
+            if (students.length === 0) {
+                output.textContent = 'No students found.';
+                return;
+            }
+
+            students.forEach(student => {
+                const row = document.createElement('div');
+                row.className = 'student-row';
+
+                const details = document.createElement('p');
+
+                details.textContent =
+                    `${student.student_id} - ${student.name}` +
+                    ` | Program: ${student.program}` +
+                    ` | Year: ${student.year}` +
+                    ` | Section: ${student.section}`;
+
+                row.appendChild(details);
+
+                const editButton = document.createElement('button');
+                editButton.type = 'button';
+                editButton.textContent = 'Edit';
+
+                editButton.addEventListener('click', function() {
+                    editStudent(student);
+                });
+
+                row.appendChild(editButton);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.textContent = 'Delete';
+                deleteButton.className = 'delete-button';
+
+                deleteButton.addEventListener('click', function() {
+                    deleteStudent(student.id);
+                });
+
+                row.appendChild(deleteButton);
+                output.appendChild(row);
+            });
+
+        } catch (error) {
+            output.textContent = error.message;
+            console.error(error);
+        }
+    }
+
+    // ==========================================
+    // CRUD: EDIT STUDENT
+    // ==========================================
+
+    function editStudent(student) {
+        if (student.id === undefined || student.id === null) {
+            showCrudMessage(
+                'Student database ID is missing.',
+                true
+            );
+            return;
+        }
+
+        document.getElementById('recordId').value = student.id;
+        document.getElementById('studentIdInput').value =
+            student.student_id ?? '';
+        document.getElementById('studentNameInput').value =
+            student.name ?? '';
+        document.getElementById('studentProgramInput').value =
+            student.program ?? '';
+        document.getElementById('studentYearInput').value =
+            String(student.year ?? '');
+        document.getElementById('studentSectionInput').value =
+            student.section ?? '';
+
+        document.getElementById('saveStudentButton').textContent =
+            'Update Student';
+
+        showCrudMessage(
+            `Editing ${student.name}. Change the fields and click Update Student.`
+        );
+
+        document.getElementById('crudSection').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    // ==========================================
+    // CRUD: DELETE STUDENT
+    // DELETE removes a student by database ID.
+    // ==========================================
+
+    async function deleteStudent(id) {
+        if (id === undefined || id === null) {
+            showCrudMessage('Student database ID is missing.', true);
+            return;
+        }
+
+        if (!confirm('Are you sure you want to delete this student?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/students/${id}`, {
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.error || 'Unable to delete student.'
+                );
+            }
+
+            showCrudMessage(result.message || 'Student deleted.');
+
+            if (
+                document.getElementById('recordId').value === String(id)
+            ) {
+                resetStudentForm();
+            }
+
+            await loadCrudStudents();
+            loadAllStudents();
+
+        } catch (error) {
+            showCrudMessage(error.message, true);
+            console.error(error);
+        }
+    }
+
+    // ==========================================
+    // LOAD INDIVIDUAL STUDENT
+    // ==========================================
+
     async function loadStudent() {
         const output = document.getElementById('result');
         output.textContent = 'Loading student information...';
@@ -311,7 +662,7 @@
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error('Request failed.');
+                throw new Error(data.error || 'Request failed.');
             }
 
             output.replaceChildren();
@@ -329,18 +680,25 @@
                 p.textContent = label + ': ' + value;
                 output.appendChild(p);
             });
+
         } catch (error) {
-            output.textContent = 'Unable to load student information.';
+            output.textContent = error.message;
             console.error(error);
         }
     }
 
-    // Load all students
+    // ==========================================
+    // LOAD ALL STUDENTS
+    // ==========================================
+
     function loadAllStudents() {
         fetchStudents('/students', 'studentList');
     }
 
-    // 18. Search by program
+    // ==========================================
+    // SEARCH BY PROGRAM
+    // ==========================================
+
     function searchByProgram() {
         const program = document.getElementById('programSelect').value;
 
@@ -350,7 +708,10 @@
         );
     }
 
-    // 19. Search by year level
+    // ==========================================
+    // SEARCH BY YEAR LEVEL
+    // ==========================================
+
     function searchByYear() {
         const year = document.getElementById('yearSelect').value;
 
@@ -360,7 +721,10 @@
         );
     }
 
-    // 20. Search by section
+    // ==========================================
+    // SEARCH BY SECTION
+    // ==========================================
+
     function searchBySection() {
         const section = document.getElementById('sectionSelect').value;
 
@@ -370,7 +734,10 @@
         );
     }
 
-    // Greeting API
+    // ==========================================
+    // GREETING API
+    // ==========================================
+
     async function sayHello() {
         const name = document.getElementById('nameInput').value.trim();
         const output = document.getElementById('greeting');
@@ -386,20 +753,25 @@
             const response = await fetch(
                 '/hello?name=' + encodeURIComponent(name)
             );
+
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error('Request failed.');
+                throw new Error(data.error || 'Request failed.');
             }
 
             output.textContent = data.message;
+
         } catch (error) {
-            output.textContent = 'Unable to retrieve greeting.';
+            output.textContent = error.message;
             console.error(error);
         }
     }
 
-    // Course Information API
+    // ==========================================
+    // COURSE INFORMATION API
+    // ==========================================
+
     async function loadCourse() {
         const output = document.getElementById('courseResult');
         output.textContent = 'Loading course information...';
@@ -409,7 +781,7 @@
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error('Request failed.');
+                throw new Error(data.error || 'Request failed.');
             }
 
             output.replaceChildren();
@@ -426,13 +798,17 @@
                 p.textContent = label + ': ' + value;
                 output.appendChild(p);
             });
+
         } catch (error) {
-            output.textContent = 'Unable to load course information.';
+            output.textContent = error.message;
             console.error(error);
         }
     }
 
-    // Grade Checker API
+    // ==========================================
+    // GRADE CHECKER API
+    // ==========================================
+
     async function checkGrade() {
         const input = document.getElementById('scoreInput');
         const output = document.getElementById('gradeResult');
@@ -445,7 +821,8 @@
         const score = Number(input.value);
 
         if (!Number.isFinite(score) || score < 0 || score > 100) {
-            output.textContent = 'Enter a valid score between 0 and 100.';
+            output.textContent =
+                'Enter a valid score between 0 and 100.';
             return;
         }
 
@@ -455,6 +832,7 @@
             const response = await fetch(
                 '/grade?score=' + encodeURIComponent(score)
             );
+
             const data = await response.json();
 
             if (!response.ok) {
@@ -471,11 +849,17 @@
 
             output.appendChild(p1);
             output.appendChild(p2);
+
         } catch (error) {
-            output.textContent = 'Unable to check grade.';
+            output.textContent = error.message;
             console.error(error);
         }
     }
+
+    // Load CRUD records when the page opens.
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCrudStudents();
+    });
 </script>
 
 </body>
