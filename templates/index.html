@@ -341,6 +341,23 @@
         <div id="gradeResult" class="results" aria-live="polite"></div>
     </section>
 
+
+    <hr>
+
+    <!-- STEP 8: CLASSMATE'S RECORDS -->
+    <section>
+        <h2>Classmate's Records</h2>
+        <p class="hint">
+            Enter your classmate's deployed API URL in the JavaScript, then load their student records.
+        </p>
+
+        <button type="button" onclick="loadClassmateRecords()">
+            Load Classmate's Records
+        </button>
+
+        <div id="classmateResults" class="results" aria-live="polite"></div>
+    </section>
+
 </div>
 
 <script>
@@ -860,6 +877,54 @@
     document.addEventListener('DOMContentLoaded', function() {
         loadCrudStudents();
     });
+
+    // ==========================================
+    // STEP 8: CLASSMATE'S RECORDS
+    // Replace this placeholder with your classmate's actual API URL.
+    // ==========================================
+    const classmateAPI =
+        "https://jarellkrismagarso-1.onrender.com/api/students";
+
+    async function loadClassmateRecords() {
+        const output = document.getElementById('classmateResults');
+        output.textContent = "Loading classmate's records...";
+
+        try {
+            const response = await fetch(classmateAPI);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error || "Unable to retrieve classmate's records."
+                );
+            }
+
+            console.log(data);
+            output.replaceChildren();
+
+            if (!Array.isArray(data) || data.length === 0) {
+                output.textContent = 'No student records found.';
+                return;
+            }
+
+            data.forEach(student => {
+                const p = document.createElement('p');
+                p.textContent =
+                    'Student ID: ' + (student.student_id ?? 'N/A') +
+                    ' | Name: ' + (student.name ?? 'N/A') +
+                    ' | Program: ' + (student.program ?? 'N/A') +
+                    ' | Year: ' + (student.year ?? 'N/A') +
+                    ' | Section: ' + (student.section ?? 'N/A');
+
+                output.appendChild(p);
+            });
+        } catch (error) {
+            output.textContent =
+                "Could not load records. Check the API URL, network, and CORS settings.";
+            console.error(error);
+        }
+    }
+
 </script>
 
 </body>
