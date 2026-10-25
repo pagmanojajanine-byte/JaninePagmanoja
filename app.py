@@ -245,7 +245,7 @@ def delete_student(id):
 
     return jsonify({"message": "Student deleted"}), 200
 
-    @app.route('/api/students', methods=['GET'])
+@app.route('/api/students', methods=['GET'])
 def api_students():
     conn = get_db_connection()
 
