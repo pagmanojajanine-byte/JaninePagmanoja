@@ -17,16 +17,15 @@ CREATE TABLE IF NOT EXISTS students (
 )
 ''')
 
-# Remove old sample records
 cursor.execute('DELETE FROM students')
 
-# Insert at least five student records
+
 students = [
-    ('2026-00123', 'Jero Paca-oncis', 'BSIT', 1, 'A'),
+    ('2026-00123', 'Jero Paca-oncis', 'BSIS', 1, 'A'),
     ('2026-00124', 'Hapee Malunes', 'BSIT', 1, 'B'),
-    ('2026-00125', 'Jarell Kris Magarso', 'BSIT', 2, 'A'),
-    ('2026-00126', 'Janine Pagmanoja', 'BSIT', 2, 'B'),
-    ('2026-00127', 'Clarisse Paclibar', 'BSIT', 3, 'A'),
+    ('2026-00125', 'Jarell Kris Magarso', 'BSCS', 2, 'A'),
+    ('2026-00126', 'Janine Pagmanoja', 'BSIS', 2, 'B'),
+    ('2026-00127', 'Clarisse Paclibar', 'BSCS', 3, 'A'),
     ('2026-00128', 'Jezalyn Indic', 'BSIT', 3, 'B')
 ]
 
