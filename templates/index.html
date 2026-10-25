@@ -65,7 +65,8 @@
         }
 
         #result,
-        #gradeResult {
+        #gradeResult,
+        #studentList {
             background: #faf5ff;
             border: 1px solid #e9d5ff;
             border-radius: 10px;
@@ -77,8 +78,18 @@
         }
 
         #result:empty,
-        #gradeResult:empty {
+        #gradeResult:empty,
+        #studentList:empty {
             display: none;
+        }
+
+        #studentList p {
+            padding: 10px 0;
+            border-bottom: 1px solid #e9d5ff;
+        }
+
+        #studentList p:last-child {
+            border-bottom: none;
         }
 
         hr {
@@ -88,7 +99,8 @@
         }
 
         .greeting-section,
-        .grade-section {
+        .grade-section,
+        .database-section {
             margin-top: 10px;
         }
 
@@ -150,6 +162,19 @@
         </button>
 
         <div id="result" aria-live="polite"></div>
+    </section>
+
+    <hr>
+
+    <!-- Students from Database -->
+    <section class="database-section">
+        <h2>Students from Database</h2>
+
+        <button onclick="loadStudents()">
+            Load Students
+        </button>
+
+        <div id="studentList" aria-live="polite"></div>
     </section>
 
     <hr>
@@ -230,9 +255,7 @@
                     b.textContent = label + ': ';
                     p.appendChild(b);
                     p.appendChild(
-                        document.createTextNode(
-                            value ?? 'Not provided'
-                        )
+                        document.createTextNode(value ?? 'Not provided')
                     );
 
                     result.appendChild(p);
@@ -245,6 +268,58 @@
             });
     }
 
+    // Load all students from the SQLite database
+    function loadStudents() {
+        const studentList = document.getElementById('studentList');
+
+        studentList.textContent = 'Loading student records...';
+
+        fetch('/students')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch student records');
+                }
+                return response.json();
+            })
+            .then(data => {
+                let output = '';
+
+                if (data.length === 0) {
+                    studentList.textContent =
+                        'No student records found in the database.';
+                    return;
+                }
+
+                data.forEach(student => {
+                    output +=
+                        '<p>' +
+                        '<b>' + escapeHTML(student.student_id) + '</b> - ' +
+                        escapeHTML(student.name) + ' | ' +
+                        escapeHTML(student.program) + ' | Year ' +
+                        escapeHTML(student.year) + ' | Section ' +
+                        escapeHTML(student.section) +
+                        '</p>';
+                });
+
+                studentList.innerHTML = output;
+            })
+            .catch(error => {
+                studentList.textContent =
+                    'Unable to retrieve student records.';
+                console.error('Database API error:', error);
+            });
+    }
+
+    // Safely display database values as text
+    function escapeHTML(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     // Greeting API
     function sayHello() {
         const name =
@@ -253,8 +328,7 @@
         const greeting = document.getElementById('greeting');
 
         if (name === '') {
-            greeting.textContent =
-                'Please enter your first name.';
+            greeting.textContent = 'Please enter your first name.';
             return;
         }
 
@@ -272,8 +346,7 @@
                     data.message || 'Greeting received.';
             })
             .catch(error => {
-                greeting.textContent =
-                    'Unable to retrieve greeting.';
+                greeting.textContent = 'Unable to retrieve greeting.';
                 console.error('Error:', error);
             });
     }
@@ -287,7 +360,6 @@
         const scoreText = scoreInput.value.trim();
         const score = Number(scoreText);
 
-        // Validate the input
         if (
             scoreText === '' ||
             !Number.isFinite(score) ||
@@ -315,7 +387,6 @@
                 );
             }
 
-            // Display the API response
             gradeResult.replaceChildren();
 
             const scoreParagraph = document.createElement('p');
