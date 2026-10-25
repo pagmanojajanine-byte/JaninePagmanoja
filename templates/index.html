@@ -2,9 +2,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Student API Interface</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student API Interface</title>
 
     <style>
         * {
@@ -17,17 +17,15 @@
         body {
             background: linear-gradient(135deg, #f3e8ff, #e0c3fc);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            padding: 30px 15px;
         }
 
         .container {
-            background: white;
+            max-width: 750px;
             width: 100%;
-            max-width: 600px;
-            padding: 35px;
+            margin: auto;
+            background: white;
+            padding: 30px;
             border-radius: 18px;
             box-shadow: 0 8px 25px rgba(80, 30, 120, 0.18);
         }
@@ -35,12 +33,23 @@
         h1 {
             text-align: center;
             color: #6b21a8;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
 
         h2 {
             color: #7e22ce;
             margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        p {
+            line-height: 1.7;
+        }
+
+        .hint {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 12px;
         }
 
         button {
@@ -48,47 +57,45 @@
             color: white;
             border: none;
             padding: 12px 18px;
+            margin: 5px 0;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 15px;
-            transition: 0.3s;
+            font-size: 14px;
         }
 
         button:hover {
             background: #581c87;
-            transform: translateY(-2px);
         }
 
-        button:disabled {
-            opacity: 0.6;
-            cursor: wait;
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #d8b4fe;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
         }
 
-        #result,
-        #gradeResult,
-        #studentList {
+        .results {
             background: #faf5ff;
             border: 1px solid #e9d5ff;
             border-radius: 10px;
-            padding: 18px;
-            margin-top: 20px;
-            color: #333;
-            line-height: 1.8;
+            padding: 15px;
+            margin-top: 15px;
             overflow-wrap: anywhere;
         }
 
-        #result:empty,
-        #gradeResult:empty,
-        #studentList:empty {
+        .results:empty {
             display: none;
         }
 
-        #studentList p {
+        .results p {
             padding: 10px 0;
             border-bottom: 1px solid #e9d5ff;
         }
 
-        #studentList p:last-child {
+        .results p:last-child {
             border-bottom: none;
         }
 
@@ -98,46 +105,13 @@
             margin: 28px 0;
         }
 
-        .greeting-section,
-        .grade-section,
-        .database-section {
-            margin-top: 10px;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 12px;
-            border: 1px solid #d8b4fe;
-            border-radius: 8px;
-            font-size: 15px;
-            outline: none;
-        }
-
-        input:focus {
-            border-color: #7e22ce;
-            box-shadow: 0 0 5px rgba(126, 34, 206, 0.25);
-        }
-
-        #greeting {
-            margin-top: 15px;
-            color: #6b21a8;
-            font-weight: bold;
-        }
-
-        .hint {
-            color: #777;
-            font-size: 13px;
-            margin-bottom: 12px;
-        }
-
-        @media (max-width: 480px) {
+        @media (max-width: 500px) {
             .container {
-                padding: 22px;
+                padding: 20px;
             }
 
             h1 {
-                font-size: 24px;
+                font-size: 25px;
             }
 
             button {
@@ -148,39 +122,85 @@
 </head>
 
 <body>
-
 <div class="container">
 
     <h1>Student API Interface</h1>
 
-    <!-- Student Information API -->
+    <!-- Student Information -->
     <section>
         <h2>Student Information</h2>
-
-        <button onclick="loadStudent()">
-            Load Student Information
-        </button>
-
-        <div id="result" aria-live="polite"></div>
+        <button onclick="loadStudent()">Load Student Information</button>
+        <div id="result" class="results" aria-live="polite"></div>
     </section>
 
     <hr>
 
-    <!-- Students from Database -->
-    <section class="database-section">
+    <!-- All Students -->
+    <section>
         <h2>Students from Database</h2>
+        <button onclick="loadAllStudents()">Load All Students</button>
+        <div id="studentList" class="results" aria-live="polite"></div>
+    </section>
 
-        <button onclick="loadStudents()">
-            Load Students
-        </button>
+    <hr>
 
-        <div id="studentList" aria-live="polite"></div>
+    <!-- 18. Search by Program -->
+    <section>
+        <h2>18. Search Students by Program</h2>
+        <p class="hint">Select a program to display its students.</p>
+
+        <select id="programSelect">
+            <option value="BSIT">BSIT</option>
+            <option value="BSCS">BSCS</option>
+            <option value="BSIS">BSIS</option>
+        </select>
+
+        <button onclick="searchByProgram()">Search by Program</button>
+
+        <div id="programResults" class="results" aria-live="polite"></div>
+    </section>
+
+    <hr>
+
+    <!-- 19. Search by Year Level -->
+    <section>
+        <h2>19. Search Students by Year Level</h2>
+        <p class="hint">Select a year level to display its students.</p>
+
+        <select id="yearSelect">
+            <option value="1">1st Year</option>
+            <option value="2">2nd Year</option>
+            <option value="3">3rd Year</option>
+            <option value="4">4th Year</option>
+        </select>
+
+        <button onclick="searchByYear()">Search by Year Level</button>
+
+        <div id="yearResults" class="results" aria-live="polite"></div>
+    </section>
+
+    <hr>
+
+    <!-- 20. Search by Section -->
+    <section>
+        <h2>20. Search Students by Section</h2>
+        <p class="hint">Select a section to display its students.</p>
+
+        <select id="sectionSelect">
+            <option value="A">Section A</option>
+            <option value="B">Section B</option>
+            <option value="C">Section C</option>
+        </select>
+
+        <button onclick="searchBySection()">Search by Section</button>
+
+        <div id="sectionResults" class="results" aria-live="polite"></div>
     </section>
 
     <hr>
 
     <!-- Greeting API -->
-    <section class="greeting-section">
+    <section>
         <h2>Greeting API</h2>
 
         <input
@@ -191,232 +211,269 @@
 
         <button onclick="sayHello()">Say Hello</button>
 
-        <p id="greeting" aria-live="polite"></p>
+        <div id="greeting" class="results" aria-live="polite"></div>
     </section>
 
     <hr>
 
-    <!-- Grade API -->
-    <section class="grade-section">
+    <!-- Course API -->
+    <section>
+        <h2>Course Information</h2>
+        <button onclick="loadCourse()">Load Course Information</button>
+        <div id="courseResult" class="results" aria-live="polite"></div>
+    </section>
+
+    <hr>
+
+    <!-- Grade Checker -->
+    <section>
         <h2>Grade Checker API</h2>
 
-        <p class="hint">
-            Enter a score to check your grade and remark.
-            Accepted scores: 0–100.
-        </p>
+        <p class="hint">Enter a score between 0 and 100.</p>
 
         <input
             type="number"
             id="scoreInput"
-            placeholder="Enter your score (0–100)"
+            placeholder="Enter your score"
             min="0"
             max="100"
             step="any"
         >
 
-        <button id="gradeButton" onclick="checkGrade()">
-            Check Grade
-        </button>
+        <button onclick="checkGrade()">Check Grade</button>
 
-        <div id="gradeResult" aria-live="polite"></div>
+        <div id="gradeResult" class="results" aria-live="polite"></div>
     </section>
 
 </div>
 
 <script>
-    // Load Student Information
-    function loadStudent() {
-        const result = document.getElementById('result');
+    // Display students in the specified results area
+    function displayStudents(elementId, students) {
+        const output = document.getElementById(elementId);
+        output.replaceChildren();
 
-        result.textContent = 'Loading student information...';
+        if (!Array.isArray(students)) {
+            output.textContent = 'Invalid student data received.';
+            return;
+        }
 
-        fetch('/student')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to fetch student data');
-                }
-                return response.json();
-            })
-            .then(data => {
-                result.replaceChildren();
+        if (students.length === 0) {
+            output.textContent = 'No matching students found.';
+            return;
+        }
 
-                const fields = [
-                    ['Student ID', data.student_id],
-                    ['Name', data.name],
-                    ['Program', data.program],
-                    ['Year', data.year],
-                    ['Section', data.section]
-                ];
+        students.forEach(student => {
+            const p = document.createElement('p');
+            const strong = document.createElement('strong');
 
-                fields.forEach(([label, value]) => {
-                    const p = document.createElement('p');
-                    const b = document.createElement('b');
+            strong.textContent = student.student_id + ' - ';
+            p.appendChild(strong);
 
-                    b.textContent = label + ': ';
-                    p.appendChild(b);
-                    p.appendChild(
-                        document.createTextNode(value ?? 'Not provided')
-                    );
+            p.appendChild(document.createTextNode(
+                student.name +
+                ' | Program: ' + student.program +
+                ' | Year: ' + student.year +
+                ' | Section: ' + student.section
+            ));
 
-                    result.appendChild(p);
-                });
-            })
-            .catch(error => {
-                result.textContent =
-                    'Unable to retrieve student data. Please try again.';
-                console.error('Error:', error);
-            });
+            output.appendChild(p);
+        });
     }
 
-    // Load all students from the SQLite database
-    function loadStudents() {
-        const studentList = document.getElementById('studentList');
+    // Reusable API request
+    async function fetchStudents(url, elementId) {
+        const output = document.getElementById(elementId);
+        output.textContent = 'Searching students...';
 
-        studentList.textContent = 'Loading student records...';
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
 
-        fetch('/students')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to fetch student records');
-                }
-                return response.json();
-            })
-            .then(data => {
-                let output = '';
+            if (!response.ok) {
+                throw new Error(data.error || 'Request failed.');
+            }
 
-                if (data.length === 0) {
-                    studentList.textContent =
-                        'No student records found in the database.';
-                    return;
-                }
-
-                data.forEach(student => {
-                    output +=
-                        '<p>' +
-                        '<b>' + escapeHTML(student.student_id) + '</b> - ' +
-                        escapeHTML(student.name) + ' | ' +
-                        escapeHTML(student.program) + ' | Year ' +
-                        escapeHTML(student.year) + ' | Section ' +
-                        escapeHTML(student.section) +
-                        '</p>';
-                });
-
-                studentList.innerHTML = output;
-            })
-            .catch(error => {
-                studentList.textContent =
-                    'Unable to retrieve student records.';
-                console.error('Database API error:', error);
-            });
+            displayStudents(elementId, data);
+        } catch (error) {
+            output.textContent = 'Unable to retrieve students. Check the Flask server.';
+            console.error(error);
+        }
     }
 
-    // Safely display database values as text
-    function escapeHTML(value) {
-        return String(value ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+    // Load individual student information
+    async function loadStudent() {
+        const output = document.getElementById('result');
+        output.textContent = 'Loading student information...';
+
+        try {
+            const response = await fetch('/student');
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error('Request failed.');
+            }
+
+            output.replaceChildren();
+
+            const fields = {
+                'Student ID': data.student_id,
+                'Name': data.name,
+                'Program': data.program,
+                'Year': data.year,
+                'Section': data.section
+            };
+
+            Object.entries(fields).forEach(([label, value]) => {
+                const p = document.createElement('p');
+                p.textContent = label + ': ' + value;
+                output.appendChild(p);
+            });
+        } catch (error) {
+            output.textContent = 'Unable to load student information.';
+            console.error(error);
+        }
+    }
+
+    // Load all students
+    function loadAllStudents() {
+        fetchStudents('/students', 'studentList');
+    }
+
+    // 18. Search by program
+    function searchByProgram() {
+        const program = document.getElementById('programSelect').value;
+
+        fetchStudents(
+            '/students/program/' + encodeURIComponent(program),
+            'programResults'
+        );
+    }
+
+    // 19. Search by year level
+    function searchByYear() {
+        const year = document.getElementById('yearSelect').value;
+
+        fetchStudents(
+            '/students/year/' + encodeURIComponent(year),
+            'yearResults'
+        );
+    }
+
+    // 20. Search by section
+    function searchBySection() {
+        const section = document.getElementById('sectionSelect').value;
+
+        fetchStudents(
+            '/students/section/' + encodeURIComponent(section),
+            'sectionResults'
+        );
     }
 
     // Greeting API
-    function sayHello() {
-        const name =
-            document.getElementById('nameInput').value.trim();
+    async function sayHello() {
+        const name = document.getElementById('nameInput').value.trim();
+        const output = document.getElementById('greeting');
 
-        const greeting = document.getElementById('greeting');
-
-        if (name === '') {
-            greeting.textContent = 'Please enter your first name.';
+        if (!name) {
+            output.textContent = 'Please enter your first name.';
             return;
         }
 
-        greeting.textContent = 'Loading greeting...';
+        output.textContent = 'Loading greeting...';
 
-        fetch('/hello?name=' + encodeURIComponent(name))
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to fetch greeting');
-                }
-                return response.json();
-            })
-            .then(data => {
-                greeting.textContent =
-                    data.message || 'Greeting received.';
-            })
-            .catch(error => {
-                greeting.textContent = 'Unable to retrieve greeting.';
-                console.error('Error:', error);
-            });
+        try {
+            const response = await fetch(
+                '/hello?name=' + encodeURIComponent(name)
+            );
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error('Request failed.');
+            }
+
+            output.textContent = data.message;
+        } catch (error) {
+            output.textContent = 'Unable to retrieve greeting.';
+            console.error(error);
+        }
     }
 
-    // Grade API
+    // Course Information API
+    async function loadCourse() {
+        const output = document.getElementById('courseResult');
+        output.textContent = 'Loading course information...';
+
+        try {
+            const response = await fetch('/course');
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error('Request failed.');
+            }
+
+            output.replaceChildren();
+
+            const fields = {
+                'Course Code': data.course_code,
+                'Course Name': data.course_name,
+                'Units': data.units,
+                'Semester': data.semester
+            };
+
+            Object.entries(fields).forEach(([label, value]) => {
+                const p = document.createElement('p');
+                p.textContent = label + ': ' + value;
+                output.appendChild(p);
+            });
+        } catch (error) {
+            output.textContent = 'Unable to load course information.';
+            console.error(error);
+        }
+    }
+
+    // Grade Checker API
     async function checkGrade() {
-        const scoreInput = document.getElementById('scoreInput');
-        const gradeResult = document.getElementById('gradeResult');
-        const gradeButton = document.getElementById('gradeButton');
+        const input = document.getElementById('scoreInput');
+        const output = document.getElementById('gradeResult');
 
-        const scoreText = scoreInput.value.trim();
-        const score = Number(scoreText);
-
-        if (
-            scoreText === '' ||
-            !Number.isFinite(score) ||
-            score < 0 ||
-            score > 100
-        ) {
-            gradeResult.textContent =
-                'Please enter a valid score between 0 and 100.';
+        if (input.value.trim() === '') {
+            output.textContent = 'Please enter a score.';
             return;
         }
 
-        gradeButton.disabled = true;
-        gradeResult.textContent = 'Checking grade...';
+        const score = Number(input.value);
+
+        if (!Number.isFinite(score) || score < 0 || score > 100) {
+            output.textContent = 'Enter a valid score between 0 and 100.';
+            return;
+        }
+
+        output.textContent = 'Checking grade...';
 
         try {
             const response = await fetch(
                 '/grade?score=' + encodeURIComponent(score)
             );
-
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(
-                    data.error || 'Failed to check grade.'
-                );
+                throw new Error(data.error || 'Grade request failed.');
             }
 
-            gradeResult.replaceChildren();
+            output.replaceChildren();
 
-            const scoreParagraph = document.createElement('p');
-            const scoreLabel = document.createElement('b');
+            const p1 = document.createElement('p');
+            p1.textContent = 'Score: ' + data.score;
 
-            scoreLabel.textContent = 'Score: ';
-            scoreParagraph.appendChild(scoreLabel);
-            scoreParagraph.appendChild(
-                document.createTextNode(data.score + '/100')
-            );
+            const p2 = document.createElement('p');
+            p2.textContent = 'Remark: ' + data.remark;
 
-            const remarkParagraph = document.createElement('p');
-            const remarkLabel = document.createElement('b');
-
-            remarkLabel.textContent = 'Remark: ';
-            remarkParagraph.appendChild(remarkLabel);
-            remarkParagraph.appendChild(
-                document.createTextNode(data.remark)
-            );
-
-            gradeResult.appendChild(scoreParagraph);
-            gradeResult.appendChild(remarkParagraph);
-
+            output.appendChild(p1);
+            output.appendChild(p2);
         } catch (error) {
-            gradeResult.textContent =
-                'Unable to check grade. Make sure the Flask server is running.';
-            console.error('Grade API error:', error);
-
-        } finally {
-            gradeButton.disabled = false;
+            output.textContent = 'Unable to check grade.';
+            console.error(error);
         }
     }
 </script>
