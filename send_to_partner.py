@@ -11,6 +11,15 @@ record = {
     "source": "Partner API"
 }
 
-response = requests.post(partner_url, json=record, timeout=15)
-print(response.status_code)
-print(response.text)
+try:
+    response = requests.post(
+        partner_url,
+        json=record,
+        timeout=30
+    )
+
+    print("Status Code:", response.status_code)
+    print("Response:", response.text)
+
+except requests.exceptions.RequestException as e:
+    print("Error:", e)
