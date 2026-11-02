@@ -551,7 +551,8 @@
                     `${student.student_id} - ${student.name}` +
                     ` | Program: ${student.program}` +
                     ` | Year: ${student.year}` +
-                    ` | Section: ${student.section}`;
+                    ` | Section: ${student.section}` +
+                    ` | Source: ${student.source ?? 'Local'}`;
 
                 row.appendChild(details);
 
@@ -908,19 +909,85 @@
             }
 
             data.forEach(student => {
+                const row = document.createElement('div');
+                row.className = 'student-row';
+
                 const p = document.createElement('p');
                 p.textContent =
                     'Student ID: ' + (student.student_id ?? 'N/A') +
                     ' | Name: ' + (student.name ?? 'N/A') +
                     ' | Program: ' + (student.program ?? 'N/A') +
-                    ' | Year: ' + (student.year ?? 'N/A') +
+                    ' | Year: ' + (student.year ?? student.year_level ?? 'N/A') +
                     ' | Section: ' + (student.section ?? 'N/A');
+                row.appendChild(p);
 
-                output.appendChild(p);
+                const saveButton = document.createElement('button');
+                saveButton.type = 'button';
+                saveButton.textContent = 'Save to My Database';
+
+                const status = document.createElement('p');
+                status.setAttribute('aria-live', 'polite');
+
+                saveButton.addEventListener('click', function() {
+                    savePartnerRecord(student, saveButton, status);
+                });
+
+                row.appendChild(saveButton);
+                row.appendChild(status);
+                output.appendChild(row);
             });
         } catch (error) {
             output.textContent =
                 "Could not load records. Check the API URL, network, and CORS settings.";
+            console.error(error);
+        }
+    }
+
+    // ==========================================
+    // SAVE CLASSMATE RECORD TO MY DATABASE
+    // ==========================================
+    async function savePartnerRecord(student, button, statusOutput) {
+        const studentData = {
+            student_id: String(student.student_id ?? '').trim(),
+            name: String(student.name ?? '').trim(),
+            program: String(student.program ?? '').trim(),
+            year: Number(student.year ?? student.year_level),
+            section: String(student.section ?? '').trim()
+        };
+
+        if (!studentData.student_id || !studentData.name ||
+            !studentData.program || !studentData.section ||
+            ![1, 2, 3, 4].includes(studentData.year)) {
+            statusOutput.style.color = '#b91c1c';
+            statusOutput.textContent = 'Cannot save: required information is missing or invalid.';
+            return;
+        }
+
+        button.disabled = true;
+        statusOutput.style.color = '';
+        statusOutput.textContent = 'Saving to your database...';
+
+        try {
+            const response = await fetch('/import-student', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(studentData)
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || result.message || 'Unable to save record.');
+            }
+
+            statusOutput.style.color = '#166534';
+            statusOutput.textContent = result.message || 'Saved to your database.';
+            button.textContent = 'Saved';
+            await loadCrudStudents();
+            loadAllStudents();
+        } catch (error) {
+            statusOutput.style.color = '#b91c1c';
+            statusOutput.textContent = error.message;
+            button.disabled = false;
             console.error(error);
         }
     }

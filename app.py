@@ -1,8 +1,7 @@
-
-
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import sqlite3
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -148,34 +147,49 @@ def get_students_by_section(section):
     conn.close()
 
     return jsonify([dict(student) for student in students])
+
+
 @app.route('/api/students', methods=['POST'])
 def add_student():
-    data = request.get_json()
+    raw_data = request.get_json(silent=True) or {}
+    source = raw_data.get('source', 'External API')
+
+    data, error = validate_student(raw_data)
+    if error:
+        return jsonify({'error': error}), 400
 
     conn = get_db_connection()
-    cursor = conn.execute(
-        """
-        INSERT INTO students
-        (student_id, name, program, year, section)
-        VALUES (?, ?, ?, ?, ?)
-        """,
-        (
+    try:
+        cursor = conn.execute('''
+            INSERT INTO students
+            (student_id, name, program, year, section, source)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (
             data['student_id'],
             data['name'],
             data['program'],
             data['year'],
-            data['section']
-        )
-    )
+            data['section'],
+            source
+        ))
 
-    conn.commit()
-    new_id = cursor.lastrowid
-    conn.close()
+        conn.commit()
 
-    return jsonify({
-        "message": "Student added",
-        "id": new_id
-    }), 201
+        return jsonify({
+            'message': 'Student added successfully.',
+            'id': cursor.lastrowid,
+            'source': source
+        }), 201
+
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        return jsonify({
+            'error': 'Could not add student. The student ID may already exist.'
+        }), 409
+
+    finally:
+        conn.close()
+
 # GET: Retrieve a student by ID
 @app.route('/api/students/<int:id>', methods=['GET'])
 def api_get_student(id):
@@ -247,6 +261,7 @@ def delete_student(id):
 
     return jsonify({"message": "Student deleted"}), 200
 
+
 @app.route('/api/students', methods=['GET'])
 def api_students():
     conn = get_db_connection()
@@ -258,5 +273,57 @@ def api_students():
     conn.close()
 
     return jsonify([dict(row) for row in rows]), 200
+
+
+# Retrieve records from Partner Flask API
+@app.route('/partner-records')
+def partner_records():
+    partner_url = "https://jarellkrismagarso-1.onrender.com/api/students"
+
+    try:
+        response = requests.get(partner_url, timeout=15)
+        response.raise_for_status()
+
+        return jsonify(response.json())
+
+    except requests.RequestException:
+        return jsonify({
+            "error": "Unable to retrieve partner data"
+        }), 502
+
+
+# Import a student from Partner API
+@app.route('/import-student', methods=['POST'])
+def import_student():
+    data = request.get_json()
+    conn = get_db_connection()
+
+    try:
+        conn.execute(
+            """
+            INSERT INTO students
+            (student_id, name, program, year, section, source)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                data['student_id'],
+                data['name'],
+                data['program'],
+                data['year'],
+                data['section'],
+                'Classmate API'
+            )
+        )
+
+        conn.commit()
+
+        return jsonify({
+            "message": "Remote record saved"
+        }), 201
+
+    finally:
+        conn.close()
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

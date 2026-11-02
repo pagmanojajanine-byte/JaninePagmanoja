@@ -1,7 +1,5 @@
-
 import sqlite3
 
-# Connect to the database
 conn = sqlite3.connect('students.db')
 cursor = conn.cursor()
 
@@ -13,30 +11,42 @@ CREATE TABLE IF NOT EXISTS students (
     name TEXT NOT NULL,
     program TEXT NOT NULL,
     year INTEGER NOT NULL,
-    section TEXT NOT NULL
+    section TEXT NOT NULL,
+    source TEXT DEFAULT 'Local'
 )
 ''')
 
+# Add the source column if the database already exists without it
+cursor.execute("PRAGMA table_info(students)")
+columns = [column[1] for column in cursor.fetchall()]
+
+if 'source' not in columns:
+    cursor.execute("""
+        ALTER TABLE students
+        ADD COLUMN source TEXT DEFAULT 'Local'
+    """)
+
+# WARNING: This deletes ALL existing student records.
+# Keep this line only if you intentionally want to reset the records.
 cursor.execute('DELETE FROM students')
 
-
 students = [
-    ('2026-00123', 'Jero Paca-oncis', 'BSIS', 1, 'A'),
-    ('2026-00124', 'Hapee Malunes', 'BSIT', 1, 'B'),
-    ('2026-00125', 'Jarell Kris Magarso', 'BSCS', 2, 'A'),
-    ('2026-00126', 'Janine Pagmanoja', 'BSIS', 2, 'B'),
-    ('2026-00127', 'Clarisse Paclibar', 'BSCS', 3, 'A'),
-    ('2026-00128', 'Jezalyn Indic', 'BSIT', 3, 'B')
+    ('24-00138', 'Jarell Kris Magarso', 'BSIT', 1, 'B', 'Local'),
+    ('24-00132', 'Sofia Mendoza', 'BSHM', 1, 'B', 'Local'),
+    ('25-00133', 'Daniel Garcia', 'BSIT', 2, 'A', 'Local'),
+    ('21-00134', 'Isabella Torres', 'BSHM', 1, 'B', 'Local'),
+    ('23-00135', 'Miguel Flores', 'BSIT', 4, 'A', 'Local'),
+    ('25-00136', 'Andrea Castillo', 'BSED', 2, 'C', 'Local')
 ]
 
 cursor.executemany('''
-INSERT INTO students (student_id, name, program, year, section)
-VALUES (?, ?, ?, ?, ?)
+INSERT INTO students
+    (student_id, name, program, year, section, source)
+VALUES (?, ?, ?, ?, ?, ?)
 ''', students)
 
-# Save changes
+# Save changes and close the connection
 conn.commit()
 conn.close()
 
-print("Database initialized successfully!")
-print("Six student records have been added.")
+print("Database initialized successfully with 6 student records.")
