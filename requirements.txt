@@ -1,9 +1,5 @@
 Flask==3.1.2
 Flask-Cors
 gunicorn==23.0.0
-<<<<<<< HEAD
 flask-cors
 requests
-=======
-requests
->>>>>>> 95bb55fbe8cad7e7f34b05a123e37cc5c74ccc39
