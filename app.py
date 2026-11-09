@@ -539,33 +539,39 @@ def api_students():
 # RETRIEVE RECORDS FROM PARTNER FLASK API
 # ==========================================
 
+# ==========================================
+# RETRIEVE RECORDS FROM PARTNER AWS LIGHTSAIL
+# ==========================================
+
 @app.route('/partner-records')
 def partner_records():
 
-    partner_url = "https://jarellkrismagarso-1.onrender.com/api/students"
+    partner_url = "http://3.104.184.4/api/students"
 
     try:
-        response = requests.get(
-            partner_url,
-            timeout=30
-        )
-
+        response = requests.get(partner_url, timeout=30)
         response.raise_for_status()
 
-        return jsonify(response.json())
+        students = response.json()
+
+        if not isinstance(students, list):
+            return jsonify({
+                "error": "Partner API returned an invalid student list."
+            }), 502
+
+        return jsonify(students), 200
 
     except requests.RequestException:
-        app.logger.exception("Unable to retrieve partner data.")
+        app.logger.exception("Unable to retrieve partner AWS records.")
 
         return jsonify({
-            "error": "Unable to retrieve partner data."
+            "error": "Unable to connect to your classmate's AWS application."
         }), 502
 
     except ValueError:
         return jsonify({
             "error": "Partner API returned invalid JSON."
         }), 502
-
 
 # ==========================================
 # IMPORT STUDENT FROM PARTNER API
